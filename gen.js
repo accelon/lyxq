@@ -1,7 +1,9 @@
 import {glob,readTextLines,writeChanged,nodefs, readTextContent, splitUTF32Char} from "ptk/nodebundle.cjs"
 await nodefs;
 const rawdir="raw/"
+const imagedir="raw/images/"
 const files=glob(rawdir,"*.xhtml");
+const images=glob(imagedir,"*.png");
 const LUNYU=[];
 //const LUNYU_QIAN=[];
 //const LUNYU_QIAN_EN=[];
@@ -50,12 +52,23 @@ const parseText=lines=>{
         } 
     }
 }
+const Images=[];
+const emitted={};
+const genImage=(id,img,alt)=>{
+    const bitmap=fs.readFileSync(rawdir+img);
+    const base64=bitmap.toString('base64');
+    if (!emitted[id]) {
+        Images.push(id+'.png\t'+(alt?alt:id+'.png'));
+        Images.push(base64);    
+    }
+    emitted[id]=true;
+}
 const gen=fn=>{
     let content=readTextContent(rawdir+fn);
     content=content.replace(/<img src="([^\"]+)" width="\d+" height="\d+" alt="([^\"]*)"[^>]+>/g,(m,img,alt)=>{
-        img=img.match(/(\d+)\.png/)[1]
-        console.log(img,alt)
-        return '^png'+img+(alt?'{alt:"'+alt.replace('.png','')+'"}':'');
+        const id=img.match(/(\d+)\.png/)[1]        
+        genImage(id,img,alt);
+        return '^png'+id+(alt?'{alt:"'+alt.replace('.png','')+'"}':'');
     })
     content=content.replace(/<\/p>/g,'\n').replace(/&#xa0;/g,'');
     content=content.replace(/<style .+?<\/style>/g,'');
@@ -68,9 +81,10 @@ const gen=fn=>{
 
 files.forEach(gen);
 
-writeChanged('raw/lunyu.pgd',LUNYU.join('\n'),true)
-writeChanged('raw/lyxq.pgd',LYXQ.join('\n'),true)
-writeChanged('raw/lyxq-en.pgd',LYXQ_EN.join('\n'),true)
+writeChanged('out/lunyu.pgd',LUNYU.join('\n'),true)
+writeChanged('out/lyxq.pgd',LYXQ.join('\n'),true)
+writeChanged('out/lyxq-en.pgd',LYXQ_EN.join('\n'),true)
+writeChanged('out/lyxq-png.pgd',Images.join('\n'),true)
 //writeChanged('raw/lunyu-qian.pgd',LUNYU_QIAN.join('\n'),true)
 //writeChanged('raw/lunyu-qian-en.pgd',LUNYU_QIAN_EN.join('\n'),true)
 //writeChanged('raw/lyxq-dict.pgd',DICT.join('\n'),true)
