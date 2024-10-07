@@ -1,4 +1,4 @@
-import {glob,readTextLines,writeChanged,nodefs, readTextContent, splitUTF32Char} from "ptk/nodebundle.cjs"
+import {glob,writeChanged,nodefs, readTextContent, splitUTF32Char} from "ptk/nodebundle.cjs"
 await nodefs;
 const rawdir="raw/"
 const imagedir="raw/images/"

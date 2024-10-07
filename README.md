@@ -1,7 +1,7 @@
 # lyxq
 論語新詮
 
-https://products.aspose.app/  word to XHTML to get images
+https://products.aspose.app/words/conversion  word to XHTML to get images
 
 學而1-1 小圖
 025 同 021
