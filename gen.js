@@ -11,7 +11,7 @@ const LYXQ=[];
 const LYXQ_EN=[];
 //const DICT=[];
 //const DICT_EN=[];
-
+let hasen=false;
 const sections={
     '【原文】':[LUNYU],
     '【譯文】':[LYXQ,LYXQ_EN],
@@ -38,15 +38,15 @@ const parseText=lines=>{
         } else if (thechar){//字頭
             out=LYXQ;
             out_en=LYXQ_EN;
-            out_en.push(thechar+'\t');//補上
+            if (hasen) out_en.push(thechar+'\t');//補上
         }
         
-        if (isen) {
+        if (isen && hasen) {
             if (out_en) out_en.push(line);
         } else if (out) {
             if (thechar) line+='\t'
             out.push(line);
-            if (~line.indexOf('《說文解字》：')) {//英文不譯說文正文
+            if (hasen&&~line.indexOf('《說文解字》：')) {//英文不譯說文正文
                 out_en.push('')
             }
         } 
@@ -66,9 +66,16 @@ const genImage=(id,img,alt)=>{
 const gen=fn=>{
     let content=readTextContent(rawdir+fn);
     content=content.replace(/<img src="([^\"]+)" width="\d+" height="\d+" alt="([^\"]*)"[^>]+>/g,(m,img,alt)=>{
-        const id=img.match(/(\d+)\.png/)[1]        
-        genImage(id,img,alt);
-        return '^png'+id+(alt?'{alt:"'+alt.replace('.png','')+'"}':'');
+        let m2=img.match(/(\d+)\.png/);
+        if (m2) {
+            const id=img.match(/(\d+)\.png/)[1]        
+            genImage(id,img,alt);
+            return '^png'+id+(alt?'{alt:"'+alt.replace('.png','')+'"}':'');
+        } else {
+            const id=img.match(/(\d+)\.jpeg/)[1]        
+            genImage(id,img,alt);
+            return '^jpg'+id+(alt?'{alt:"'+alt.replace('.jpg','')+'"}':'');
+        }
     })
     content=content.replace(/<\/p>/g,'\n').replace(/&#xa0;/g,'');
     content=content.replace(/<style .+?<\/style>/g,'');
@@ -82,9 +89,9 @@ const gen=fn=>{
 files.forEach(gen);
 
 writeChanged('out/lunyu.pgd',LUNYU.join('\n'),true)
-writeChanged('out/lyxq.pgd',LYXQ.join('\n'),true)
-writeChanged('out/lyxq-en.pgd',LYXQ_EN.join('\n'),true)
-writeChanged('out/lyxq-png.pgd',Images.join('\n'),true)
+writeChanged('out/4lyxq.pgd',LYXQ.join('\n'),true)
+writeChanged('out/4lyxq-en.pgd',LYXQ_EN.join('\n'),true)
+writeChanged('out/4lyxq-png.pgd',Images.join('\n'),true)
 //writeChanged('raw/lunyu-qian.pgd',LUNYU_QIAN.join('\n'),true)
 //writeChanged('raw/lunyu-qian-en.pgd',LUNYU_QIAN_EN.join('\n'),true)
 //writeChanged('raw/lyxq-dict.pgd',DICT.join('\n'),true)
